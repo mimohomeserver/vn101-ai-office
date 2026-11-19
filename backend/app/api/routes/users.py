@@ -17,17 +17,13 @@ async def get_my_profile(
 ) -> dict[str, Any]:
     client = getattr(request.app.state, "mongo_client", None)
     if client is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="MongoDB is not configured",
-        )
+        raise HTTPException(status_code=503, detail="MongoDB is not configured")
 
     settings = get_settings()
-    database = get_mongo_database(client)
-    users = database["users"]
+    users = get_mongo_database(client)["users"]
     uid = identity["uid"]
     now = datetime.now(timezone.utc)
-    profile = {
+    update_fields: dict[str, Any] = {
         "firebase_uid": uid,
         "email": identity.get("email"),
         "display_name": identity.get("name"),
@@ -35,16 +31,18 @@ async def get_my_profile(
         "email_verified": True,
         "updated_at": now,
     }
-
-    update: dict[str, Any] = {
-        "$set": profile,
-        "$setOnInsert": {"role": "user", "created_at": now},
-    }
+    insert_fields: dict[str, Any] = {"created_at": now}
     if settings.owner_firebase_uid and uid == settings.owner_firebase_uid:
-        update["$set"]["role"] = "owner"
+        update_fields["role"] = "owner"
+    else:
+        insert_fields["role"] = "user"
 
     try:
-        await users.update_one({"firebase_uid": uid}, update, upsert=True)
+        await users.update_one(
+            {"firebase_uid": uid},
+            {"$set": update_fields, "$setOnInsert": insert_fields},
+            upsert=True,
+        )
         saved = await users.find_one(
             {"firebase_uid": uid},
             {"_id": 0, "firebase_uid": 1, "email": 1, "display_name": 1,
@@ -57,8 +55,5 @@ async def get_my_profile(
         ) from None
 
     if saved is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="User profile could not be loaded",
-        )
+        raise HTTPException(status_code=503, detail="User profile could not be loaded")
     return saved
