@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     api_prefix: str = "/api/v1"
     mongodb_uri: str = ""
     mongodb_database: str = "vn101_ai_office"
+    mongodb_server_selection_timeout_ms: int = 3000
 
     model_config = SettingsConfigDict(
         env_file=".env",
