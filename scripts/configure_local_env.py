@@ -50,7 +50,7 @@ def main() -> None:
     if not mongo_uri:
         raise SystemExit("MongoDB URI is required.")
 
-    env_path = root / ".env"
+    env_path = root / "backend" / ".env"
     if env_path.exists():
         confirm = input(".env already exists. Replace it? Type YES to continue: ").strip()
         if confirm != "YES":
