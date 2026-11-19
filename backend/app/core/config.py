@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     mongodb_uri: str = ""
     mongodb_database: str = "vn101_ai_office"
     mongodb_server_selection_timeout_ms: int = 3000
+    firebase_project_id: str = ""
+    firebase_service_account_json: str = ""
+    owner_firebase_uid: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
