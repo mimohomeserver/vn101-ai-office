@@ -3,6 +3,7 @@ from typing import AsyncIterator
 
 from fastapi import FastAPI, HTTPException, Request, status
 
+from app.api.routes.users import router as users_router
 from app.core.config import get_settings
 from app.core.database import create_mongo_client
 
@@ -22,10 +23,11 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(
     title=settings.app_name,
-    version="0.2.0",
+    version="0.3.0",
     description="Multi-agent AI management platform.",
     lifespan=lifespan,
 )
+app.include_router(users_router, prefix=settings.api_prefix)
 
 
 @app.get("/healthz", tags=["system"])
