@@ -3,6 +3,7 @@ from typing import AsyncIterator
 
 from fastapi import FastAPI, HTTPException, Request, status
 
+from app.api.routes.auth_test import router as auth_test_router
 from app.api.routes.users import router as users_router
 from app.core.config import get_settings
 from app.core.database import create_mongo_client
@@ -28,6 +29,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.include_router(users_router, prefix=settings.api_prefix)
+app.include_router(auth_test_router)
 
 
 @app.get("/healthz", tags=["system"])
